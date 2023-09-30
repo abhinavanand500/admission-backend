@@ -28,9 +28,6 @@ app.listen(port, () => {
 })
 
 app.post('/send-email', (req, res) => {
-  console.log('asdasd', req.body)
-  const { name, email, message } = req.body
-
   const beautifulString = req.body
     .map(item => `${item.Attribute}: ${item.Value}`)
     .join('\n')
