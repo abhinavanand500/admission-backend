@@ -122,3 +122,24 @@ app.get("/", (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+app.post("/send-email", (req, res) => {
+  const beautifulString = req.body
+    .map((item) => `${item.Attribute}: ${item.Value}`)
+    .join("\n");
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: "mbbsadmissionsinabroad@gmail.com",
+    subject: "New Form Submission",
+    text: beautifulString,
+  };
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("Error sending email", error);
+      res.status(500).send({ message: "Error sending email" });
+    } else {
+      console.log("Email sent: " + info.response);
+      res.status(200).send({ message: "Email sent successfully" });
+    }
+  });
+});
