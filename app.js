@@ -33,10 +33,11 @@ const transporter = nodemailer.createTransport({
 
 // MongoDB connection function
 async function connectDB() {
-  if (!client.topology || !client.topology.isConnected()) {
+  if (!db) {
     await client.connect();
+    db = client.db("examDB");
   }
-  return client.db("examDB");
+  return db;
 }
 
 // Route handler for both POST and GET requests
@@ -81,8 +82,6 @@ app.all("/api/user", async (req, res) => {
     } catch (error) {
       console.error("Error saving/updating user:", error);
       res.status(500).json({ message: "Something went wrong." });
-    } finally {
-      await client.close();
     }
   } else if (req.method === "GET") {
     try {
@@ -105,8 +104,6 @@ app.all("/api/user", async (req, res) => {
     } catch (error) {
       console.error("Error fetching user:", error);
       res.status(500).json({ message: "Something went wrong." });
-    } finally {
-      await client.close();
     }
   } else {
     res.status(405).json({ message: "Method not allowed." });
