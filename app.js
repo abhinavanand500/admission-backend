@@ -41,9 +41,8 @@ async function connectDB() {
 
 // Route handler for both POST and GET requests
 app.all("/api/user", async (req, res) => {
-  const { email, phone, name } = req.body;
-
   if (req.method === "POST") {
+    const { email, phone, name } = req.body;
     try {
       const db = await connectDB();
       const usersCollection = db.collection("users");
@@ -91,6 +90,7 @@ app.all("/api/user", async (req, res) => {
       const usersCollection = db.collection("users");
 
       // Fetch user details based on email and phone from query parameters
+
       const { email, phone } = req.query;
 
       // Find the user by email and phone
