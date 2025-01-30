@@ -33,11 +33,15 @@ const transporter = nodemailer.createTransport({
 
 // MongoDB connection function
 async function connectDB() {
-  if (!db) {
-    await client.connect();
-    db = client.db("examDB");
+  try {
+    if (!client.topology || !client.topology.isConnected()) {
+      await client.connect();
+    }
+    return client.db("examDB");
+  } catch (error) {
+    console.error("MongoDB connection error:", error);
+    throw new Error("MongoDB connection failed");
   }
-  return db;
 }
 
 // Route handler for both POST and GET requests
