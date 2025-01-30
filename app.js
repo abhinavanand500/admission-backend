@@ -91,7 +91,7 @@ app.all("/api/user", async (req, res) => {
       const usersCollection = db.collection("users");
 
       // Fetch user details based on email and phone from query parameters
-      const { email, phone } = req.query;
+      const { email, phone } = req.body;
 
       // Find the user by email and phone
       const user = await usersCollection.findOne({ email, phone });
