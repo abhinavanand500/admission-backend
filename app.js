@@ -49,22 +49,25 @@ app.post("/send-email", (req, res) => {
   });
 });
 
-const client = new MongoClient(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+let cachedClient = null;
+let cachedDb = null;
 
-// MongoDB connection function
 async function connectDB() {
-  try {
-    if (!client.topology || !client.topology.isConnected()) {
-      await client.connect();
-    }
-    return client.db("examDB");
-  } catch (error) {
-    console.error("MongoDB connection error:", error);
-    throw new Error("MongoDB connection failed");
+  if (cachedDb) {
+    return cachedDb;
   }
+
+  if (!cachedClient) {
+    cachedClient = new MongoClient(process.env.MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+
+    await cachedClient.connect();
+  }
+
+  cachedDb = cachedClient.db("examDB");
+  return cachedDb;
 }
 
 // Route handler for both POST and GET requests
