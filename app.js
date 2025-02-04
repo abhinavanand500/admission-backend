@@ -1,34 +1,57 @@
-import express from "express";
-import { MongoClient } from "mongodb";
-import nodemailer from "nodemailer";
-import bodyParser from "body-parser";
-import cors from "cors";
-import dotenv from "dotenv";
-
-// Load environment variables
-dotenv.config();
+const express = require("express");
+const nodemailer = require("nodemailer");
+const bodyParser = require("body-parser");
+const { MongoClient } = require("mongodb");
+require("dotenv").config(); // Load environment variables from .env file
+const cors = require("cors"); // Import the cors packa
 
 const app = express();
-const port = 8000;
-
-// Middleware
 app.use(cors());
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+const port = 3001;
 
-// MongoDB connection
-const client = new MongoClient(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
-
-// Nodemailer Transporter
 const transporter = nodemailer.createTransport({
   service: process.env.EMAIL_SERVICE,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+});
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+
+app.get("/", (req, res) => {
+  res.send("Hello, Express!");
+});
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+app.post("/send-email", (req, res) => {
+  const beautifulString = req.body
+    .map((item) => `${item.Attribute}: ${item.Value}`)
+    .join("\n");
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: "mbbsadmissionsinabroad@gmail.com",
+    subject: "New Form Submission",
+    text: beautifulString,
+  };
+  transporter.sendMail(mailOptions, (error, info) => {
+    if (error) {
+      console.error("Error sending email", error);
+      res.status(500).send({ message: "Error sending email" });
+    } else {
+      console.log("Email sent: " + info.response);
+      res.status(200).send({ message: "Email sent successfully" });
+    }
+  });
+});
+
+const client = new MongoClient(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 });
 
 // MongoDB connection function
@@ -112,35 +135,4 @@ app.all("/api/user", async (req, res) => {
   } else {
     res.status(405).json({ message: "Method not allowed." });
   }
-});
-
-// Root Route
-app.get("/", (req, res) => {
-  res.send("Hello, Express!");
-});
-
-// Start Server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-
-app.post("/send-email", (req, res) => {
-  const beautifulString = req.body
-    .map((item) => `${item.Attribute}: ${item.Value}`)
-    .join("\n");
-  const mailOptions = {
-    from: process.env.EMAIL_USER,
-    to: "mbbsadmissionsinabroad@gmail.com",
-    subject: "New Form Submission",
-    text: beautifulString,
-  };
-  transporter.sendMail(mailOptions, (error, info) => {
-    if (error) {
-      console.error("Error sending email", error);
-      res.status(500).send({ message: "Error sending email" });
-    } else {
-      console.log("Email sent: " + info.response);
-      res.status(200).send({ message: "Email sent successfully" });
-    }
-  });
 });
